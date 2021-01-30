@@ -1,0 +1,52 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+
+begin
+  require 'taglib'
+rescue LoadError
+  puts "Cannot load taglib: https://robinst.github.io/taglib-ruby/"
+end
+
+number = 0
+
+Dir['_arquivos/cantico_*.mp4'].each do |file|
+  print "Remove '#{file}'? (y/n/q[quit]) "
+  a = gets.chomp.downcase.strip
+
+  if a == 'y'
+    FileUtils.rm(file)
+  end
+
+  if a == 'q'
+    exit
+  end
+end
+
+while true
+  number += 1
+  print "Song #{number}: (number/q[quit]) "
+  song_number = gets.chomp.strip
+
+  if song_number.downcase == 'q'
+    exit
+  end
+
+  song_number = song_number.to_s.rjust(3, '0')
+
+  source_file = "canticos/sjjm_T_#{song_number}_r480P.mp4"
+  target_file = "_arquivos/cantico_#{number}_#{song_number}.mp4"
+
+  if defined?(TagLib)
+    TagLib::FileRef.open(source_file) do |fileref|
+      unless fileref.null?
+        title = fileref.tag.title
+        puts title
+        puts
+        target_file = "_arquivos/cantico_#{number} - #{title}.mp4"
+      end
+    end
+  end
+
+  FileUtils.copy(source_file, target_file)
+end
